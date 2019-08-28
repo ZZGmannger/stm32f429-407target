@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\Libraries\CMSIS\Include;..\..\User;..\..\FATFS;..\..\FATFS\exfuns;..\..\FATFS\src;..\..\FATFS\src\option</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\Libraries\CMSIS\Include;..\..\User;..\..\FATFS;..\..\FATFS\exfuns;..\..\FATFS\src;..\..\FATFS\src\option;..\..\User\at_parser</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -392,6 +392,16 @@
               <FileType>1</FileType>
               <FilePath>..\..\User\stm32f4xx_it.c</FilePath>
             </File>
+            <File>
+              <FileName>ec20.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\EC20\ec20.c</FilePath>
+            </File>
+            <File>
+              <FileName>at_parser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\at_parser\at_parser.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -428,11 +438,6 @@
               <FilePath>..\..\User\tim\bsp_general_tim.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_debug_usart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\usart\bsp_debug_usart.c</FilePath>
-            </File>
-            <File>
               <FileName>sys_tick.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\sys_tick.c</FilePath>
@@ -441,6 +446,11 @@
               <FileName>bsp_sdio_sd.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\sd\bsp_sdio_sd.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\usart\bsp_usart.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1085,6 +1095,16 @@
               <FileType>1</FileType>
               <FilePath>..\..\User\stm32f4xx_it.c</FilePath>
             </File>
+            <File>
+              <FileName>ec20.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\EC20\ec20.c</FilePath>
+            </File>
+            <File>
+              <FileName>at_parser.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\at_parser\at_parser.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1121,11 +1141,6 @@
               <FilePath>..\..\User\tim\bsp_general_tim.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_debug_usart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\usart\bsp_debug_usart.c</FilePath>
-            </File>
-            <File>
               <FileName>sys_tick.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\sys_tick.c</FilePath>
@@ -1134,6 +1149,11 @@
               <FileName>bsp_sdio_sd.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\sd\bsp_sdio_sd.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\usart\bsp_usart.c</FilePath>
             </File>
           </Files>
         </Group>

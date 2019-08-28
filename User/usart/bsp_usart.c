@@ -15,8 +15,10 @@
   ******************************************************************************
   */ 
   
-#include "./usart/bsp_debug_usart.h"
+#include "./usart/bsp_usart.h"
 
+usart_cb_t  usart1_callback = NULL;
+usart_cb_t  usart2_callback = NULL;
 
  /**
   * @brief  ÅäÖÃÇ¶Ì×ÏòÁ¿ÖÐ¶Ï¿ØÖÆÆ÷NVIC
@@ -53,6 +55,17 @@ static void NVIC_Configuration(void)
 	NVIC_Init(&NVIC_InitStructure);
 }
 
+void usart_register(uint8_t port,usart_cb_t cb)
+{
+	if(port == 1)
+	{
+		usart1_callback = cb;
+	}
+	else if(port == 2)
+	{
+		usart2_callback = cb;
+	}
+}
 
 void usart_init(void)
 {
@@ -89,6 +102,7 @@ void usart_init(void)
 	USART_Init(DEBUG_USART, &USART_InitStructure); 
 
 	USART_ITConfig(DEBUG_USART, USART_IT_RXNE, ENABLE);
+	USART_ITConfig(DEBUG_USART, USART_IT_IDLE, ENABLE);
 
 	USART_Cmd(DEBUG_USART, ENABLE);
 	
@@ -121,6 +135,7 @@ void usart_init(void)
 
 	NVIC_Configuration();
 	USART_ITConfig(CMD_USART, USART_IT_RXNE, ENABLE);
+	USART_ITConfig(CMD_USART, USART_IT_IDLE, ENABLE);
 
 	USART_Cmd(CMD_USART, ENABLE);
 }
@@ -154,4 +169,66 @@ int fputc(int ch, FILE *f)
 		return (ch);
 }
 
+void USART1_IRQHandler(void)                
+{
+	uint16_t clear=0;
+	static uint8_t rec_buff[32];
+	static uint8_t rec_len;
+	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  
+	{		
+		rec_buff[rec_len] = USART_ReceiveData(USART1);
+		if(rec_len < 32)
+		{
+			rec_len++;
+		}			
+	} 
+	if(USART_GetITStatus(USART1, USART_IT_IDLE) != RESET)  
+	{
+		clear = USART1->DR;
+		clear = USART1->SR;
+		
+		usart_write(USART2,rec_buff,rec_len);
+		if(usart1_callback != NULL && rec_len > 1)
+		{
+			usart1_callback(rec_buff,rec_len);
+		}
+		else
+		{
+			
+		}
+		rec_len = 0;
+	} 
+
+} 
+void USART2_IRQHandler(void)                
+{
+	uint16_t clear=0;
+	static uint8_t rec_buff[32];
+	static uint8_t rec_len;
+	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)  
+	{		
+		rec_buff[rec_len] = USART_ReceiveData(USART2);
+		if(rec_len < 32)
+		{
+			rec_len++;
+		}			
+	} 
+	if(USART_GetITStatus(USART2, USART_IT_IDLE) != RESET)  
+	{
+		clear = USART2->DR;
+		clear = USART2->SR;
+		
+		usart_write(USART1,rec_buff,rec_len);
+		if(usart2_callback != NULL && rec_len > 1)
+		{
+			usart2_callback(rec_buff,rec_len);
+		}
+		else
+		{
+			
+		}
+		rec_len = 0;
+	} 
+
+} 
 /*********************************************END OF FILE**********************/

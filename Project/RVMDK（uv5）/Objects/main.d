@@ -37,8 +37,12 @@
 .\objects\main.o: ..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_fsmc.h
 .\objects\main.o: ..\..\User\./tim/bsp_general_tim.h
 .\objects\main.o: ..\..\User\./led/bsp_led.h
-.\objects\main.o: ..\..\User\./usart/bsp_debug_usart.h
+.\objects\main.o: ..\..\User\./usart/bsp_usart.h
 .\objects\main.o: C:\keil5.28\ARM\ARMCC\Bin\..\include\stdio.h
 .\objects\main.o: ..\..\FATFS\ff.h
 .\objects\main.o: ..\..\FATFS\integer.h
 .\objects\main.o: ..\..\FATFS\ffconf.h
+.\objects\main.o: ..\..\User\at_parser\at_parser.h
+.\objects\main.o: C:\keil5.28\ARM\ARMCC\Bin\..\include\string.h
+.\objects\main.o: C:\keil5.28\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\main.o: C:\keil5.28\ARM\ARMCC\Bin\..\include\stdarg.h

@@ -6,7 +6,7 @@
 void delay_ms(__IO u32 nTime);
 void SysTick_init(void);
 void timing_delay_decrement(void);
-
+uint32_t Uptime_Ms(void);
 
 #endif
 

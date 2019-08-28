@@ -21,6 +21,12 @@ void SysTick_init(void)
 	}
 }
 
+volatile uint32_t sys_time;
+
+uint32_t Uptime_Ms(void)
+{
+	return sys_time;
+}
 
 void delay_ms(__IO u32 nTime)
 { 
@@ -37,6 +43,7 @@ void delay_ms(__IO u32 nTime)
   */
 void timing_delay_decrement(void)
 {
+	sys_time++;
 	if (TimingDelay != 0x00)
 	{ 
 		TimingDelay--;
