@@ -23,8 +23,10 @@
 
 #include "at_parser.h"
 
-uint8_t aad[20];
+
 void ec20_process(void);
+void ec20_init(void);
+
 int main(void) 
 {
 	SysTick_init();
@@ -32,11 +34,11 @@ int main(void)
 	TIMx_Configuration();
 	usart_init();
 
-    at_parser_init();
+    ec20_init();
 	
 	while(1)
 	{        		
-		ec20_process();				
+		ec20_process();	
 	}	
 }
 

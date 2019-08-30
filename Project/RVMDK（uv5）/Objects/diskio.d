@@ -6,7 +6,7 @@
 .\objects\diskio.o: ..\..\User\sd/bsp_sdio_sd.h
 .\objects\diskio.o: ..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\diskio.o: ..\..\Libraries\CMSIS\Include\core_cm4.h
-.\objects\diskio.o: C:\keil5.28\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\diskio.o: C:\Software\MDK5.26\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\diskio.o: ..\..\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\diskio.o: ..\..\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\diskio.o: ..\..\Libraries\CMSIS\Include\core_cmSimd.h
@@ -39,4 +39,4 @@
 .\objects\diskio.o: ..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dac.h
 .\objects\diskio.o: ..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_dcmi.h
 .\objects\diskio.o: ..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_fsmc.h
-.\objects\diskio.o: C:\keil5.28\ARM\ARMCC\Bin\..\include\string.h
+.\objects\diskio.o: C:\Software\MDK5.26\ARM\ARMCC\Bin\..\include\string.h

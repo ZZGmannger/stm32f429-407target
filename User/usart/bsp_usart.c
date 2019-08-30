@@ -169,15 +169,16 @@ int fputc(int ch, FILE *f)
 		return (ch);
 }
 
+#define USART_MAX_SIZE   128
 void USART1_IRQHandler(void)                
 {
 	uint16_t clear=0;
-	static uint8_t rec_buff[32];
+	static uint8_t rec_buff[USART_MAX_SIZE];
 	static uint8_t rec_len;
 	if(USART_GetITStatus(USART1, USART_IT_RXNE) != RESET)  
 	{		
 		rec_buff[rec_len] = USART_ReceiveData(USART1);
-		if(rec_len < 32)
+		if(rec_len < USART_MAX_SIZE)
 		{
 			rec_len++;
 		}			
@@ -187,7 +188,6 @@ void USART1_IRQHandler(void)
 		clear = USART1->DR;
 		clear = USART1->SR;
 		
-		usart_write(USART2,rec_buff,rec_len);
 		if(usart1_callback != NULL && rec_len > 1)
 		{
 			usart1_callback(rec_buff,rec_len);
@@ -203,12 +203,12 @@ void USART1_IRQHandler(void)
 void USART2_IRQHandler(void)                
 {
 	uint16_t clear=0;
-	static uint8_t rec_buff[32];
+	static uint8_t rec_buff[USART_MAX_SIZE];
 	static uint8_t rec_len;
 	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)  
 	{		
 		rec_buff[rec_len] = USART_ReceiveData(USART2);
-		if(rec_len < 32)
+		if(rec_len < USART_MAX_SIZE)
 		{
 			rec_len++;
 		}			
