@@ -3,6 +3,7 @@
 ".\objects\stm32f4xx_it.o"
 ".\objects\ec20.o"
 ".\objects\at_parser.o"
+".\objects\at_producer.o"
 ".\objects\diskio.o"
 ".\objects\ff.o"
 ".\objects\cc936.o"

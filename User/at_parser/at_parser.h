@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#define AT_LOG   (printf)
+
 typedef void (*urc_func)(uint8_t *buf , uint8_t len);
 
 void at_parser_init(void);

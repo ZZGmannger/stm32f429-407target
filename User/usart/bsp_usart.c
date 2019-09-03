@@ -16,6 +16,7 @@
   */ 
   
 #include "./usart/bsp_usart.h"
+#include "sys_tick.h"
 
 usart_cb_t  usart1_callback = NULL;
 usart_cb_t  usart2_callback = NULL;
@@ -135,7 +136,7 @@ void usart_init(void)
 
 	NVIC_Configuration();
 	USART_ITConfig(CMD_USART, USART_IT_RXNE, ENABLE);
-	USART_ITConfig(CMD_USART, USART_IT_IDLE, ENABLE);
+	//USART_ITConfig(CMD_USART, USART_IT_IDLE, ENABLE);
 
 	USART_Cmd(CMD_USART, ENABLE);
 }
@@ -200,35 +201,74 @@ void USART1_IRQHandler(void)
 	} 
 
 } 
+
+static uint8_t a_rec_buff[USART_MAX_SIZE];
+static uint8_t a_rec_len;
+volatile static uint32_t time;
+
+uint8_t rec_flag;
+
+void uart_idle_clean(void)
+{
+	time = 0;
+	rec_flag = 1;
+}
+void uart_idle_deal(void)
+{
+	if(rec_flag)
+	{
+		if(!time){
+			time = Uptime_Ms();
+		}
+		if(Uptime_Ms() - time > 20)
+		{
+			time = 0;
+			rec_flag = 0;
+			usart_write(USART1,a_rec_buff,a_rec_len);
+			if(usart2_callback != NULL && a_rec_len > 1)
+			{
+				usart2_callback(a_rec_buff,a_rec_len);
+			}
+			else
+			{
+				
+			}
+			a_rec_len = 0;
+		}
+	}
+}
+	
+
 void USART2_IRQHandler(void)                
 {
-	uint16_t clear=0;
-	static uint8_t rec_buff[USART_MAX_SIZE];
-	static uint8_t rec_len;
+	//uint16_t clear=0;
+
+
 	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)  
 	{		
-		rec_buff[rec_len] = USART_ReceiveData(USART2);
-		if(rec_len < USART_MAX_SIZE)
+		a_rec_buff[a_rec_len] = USART_ReceiveData(USART2);
+		if(a_rec_len < USART_MAX_SIZE)
 		{
-			rec_len++;
-		}			
+			a_rec_len++;
+		}	
+		uart_idle_clean();		
 	} 
-	if(USART_GetITStatus(USART2, USART_IT_IDLE) != RESET)  
-	{
-		clear = USART2->DR;
-		clear = USART2->SR;
-		
-		usart_write(USART1,rec_buff,rec_len);
-		if(usart2_callback != NULL && rec_len > 1)
-		{
-			usart2_callback(rec_buff,rec_len);
-		}
-		else
-		{
-			
-		}
-		rec_len = 0;
-	} 
+//	if(USART_GetITStatus(USART2, USART_IT_IDLE) != RESET)  
+//	{
+//		clear = USART2->DR;
+//		clear = USART2->SR;
+//		
+//		usart_write(USART1,rec_buff,rec_len);
+//		if(usart2_callback != NULL && rec_len > 1)
+//		{
+//			usart2_callback(rec_buff,rec_len);
+//		}
+//		else
+//		{
+//			
+//		}
+//		rec_len = 0;
+//	} 
 
 } 
 /*********************************************END OF FILE**********************/

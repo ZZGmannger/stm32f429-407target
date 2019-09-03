@@ -2,7 +2,7 @@
 .\objects\bsp_sdio_sd.o: ..\..\User\sd/bsp_sdio_sd.h
 .\objects\bsp_sdio_sd.o: ..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\bsp_sdio_sd.o: ..\..\Libraries\CMSIS\Include\core_cm4.h
-.\objects\bsp_sdio_sd.o: C:\Software\MDK5.26\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\bsp_sdio_sd.o: C:\Keil_v5.28\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\bsp_sdio_sd.o: ..\..\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\bsp_sdio_sd.o: ..\..\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\bsp_sdio_sd.o: ..\..\Libraries\CMSIS\Include\core_cmSimd.h

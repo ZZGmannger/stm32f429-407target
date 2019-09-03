@@ -2,7 +2,7 @@
 .\objects\sys_tick.o: ..\..\User\sys_tick.h
 .\objects\sys_tick.o: ..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\sys_tick.o: ..\..\Libraries\CMSIS\Include\core_cm4.h
-.\objects\sys_tick.o: C:\Software\MDK5.26\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\sys_tick.o: C:\Keil_v5.28\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\sys_tick.o: ..\..\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\sys_tick.o: ..\..\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\sys_tick.o: ..\..\Libraries\CMSIS\Include\core_cmSimd.h

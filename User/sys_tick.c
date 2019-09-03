@@ -41,8 +41,10 @@ void delay_ms(__IO u32 nTime)
   * @retval 无
   * @attention  在 SysTick 中断函数 SysTick_Handler()调用
   */
+void uart_idle_deal(void);
 void timing_delay_decrement(void)
 {
+	uart_idle_deal();
 	sys_time++;
 	if (TimingDelay != 0x00)
 	{ 

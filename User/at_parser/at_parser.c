@@ -4,7 +4,7 @@
 #include "at_parser.h"
 
 
-#define AT_LOG   (printf)
+
 #define AT_USART (USART2)
 
 #define URC_MAX_NUM   (8)
@@ -235,7 +235,6 @@ int8_t at_send_cmp_reply(const char* cmd,
 						 uint8_t line,
 						 uint16_t timeout)
 {
-	 uint8_t len = 0;
 	 uint8_t *resp_line_buf = 0;
 
      if(at_send_with_reply(cmd,timeout))
