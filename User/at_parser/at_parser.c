@@ -8,16 +8,22 @@
 #define AT_USART (USART2)
 
 #define URC_MAX_NUM   (8)
-#define AT_RESPOND_MAX 128
+#define AT_RESPOND_MAX 256
 
 struct resp_t
 {
+	uint8_t rec;
 	uint8_t state;
-	uint8_t line_count;
-	uint8_t data[AT_RESPOND_MAX];
+	uint8_t line_cnt;
+	char fifo[AT_RESPOND_MAX];
 };
 struct resp_t  respond;
 
+enum
+{
+	REPS_IDLE,
+	REPS_WAIT,
+};
 
 typedef struct 
 {
@@ -81,54 +87,8 @@ static uint8_t URC_data_process(uint8_t *buffer,uint16_t len)
 	return 0;
 }
 
-static void respond_data_process(uint8_t *buffer,uint16_t len)
-{		
-	char * pend = NULL;	
-	char *pdata = (char*)buffer;
-	char *sdata = (char*)respond.data;
-	
-	uint8_t length = 0;
-	
-	if(len >= AT_RESPOND_MAX)
-	{
-		AT_LOG("\r\n>>>>>the respond data size over the max size %d\r\n",AT_RESPOND_MAX);
-		return;
-	}	
-	
-	if(!respond.state)
-	{
-		respond.state = 1;		
-		
-		while(pdata < (char*)(buffer+len))
-		{
-			/*find \r\n and return it addr*/
-			pend = strstr((char *)pdata,"\r\n");
-			respond.line_count++;
-			
-			if(pend == NULL)
-			{
-				respond.state = 0;	
-				AT_LOG("\r\n>>>>>respond error,without end\r\n");
-				return;	
-			}
-									
-			*pend = '\0';
-			length = strlen(pdata);
-			if(length)
-			{
-				memcpy(sdata , pdata ,length);
-			}
-			
-			sdata += length;
-			
-			(*sdata) = '\0';
-			sdata += 1;
-			length += 2;		
-			pdata += length;
-		}	
-	}	
-	
-}
+
+void respond_data_process(uint8_t *buffer , uint16_t len);
 
 static void uart_callback(uint8_t *data , uint8_t len)
 {
@@ -154,73 +114,106 @@ void at_parser_init(void)
 		AT_LOG("\r\n>>>>>AT parser register fail\r\n");
 	}
 }
-/*等待响应*/
-static int wait_reply(uint16_t timeout)
+
+
+uint8_t enter_to_end(char* from_str , char* to_str)
 {
-	static uint32_t start_time;
+	uint8_t line_cnt = 0;
+	uint8_t line_len = 0;
 	
-	while(!respond.state)
-	{	   
-		if(!start_time){
-			start_time = Uptime_Ms();
-		}
-		if((Uptime_Ms()-start_time) >= timeout)
+	char * idx = NULL;	
+	char *pdata = from_str;
+	char *sdata = to_str;
+	
+	uint8_t length = strlen(from_str);
+   
+   while(pdata < (char*)(from_str + length))
+   {
+		idx = strstr((char *)pdata,"\r\n");
+  
+		if(idx == NULL)
 		{
-			start_time = 0;			
-			return -1;
+			idx = strstr((char *)pdata,"\r");
+			if(idx == NULL)
+			{
+				return line_cnt;
+			}
+			*idx ='\0';
+			line_len = strlen(pdata);
+			if(line_len)
+			{
+				memcpy(sdata , pdata ,line_len);
+				sdata += line_len;
+				*(sdata++) = '\0';	
+			}
+			return line_cnt+1;
+		};
+		line_cnt++;
+		
+		*idx = '\0';
+		line_len = 	strlen(pdata);
+		if(line_len)
+		{
+			memcpy(sdata , pdata ,line_len);
 		}
-	}	
-	start_time = 0;
-	return 0;
-}
-/*清除响应数据*/
-static void clean_reply(void)
-{
-	memset(respond.data,0,AT_RESPOND_MAX);
-	respond.line_count = 0;
-	respond.state = 0;
+		
+		sdata += line_len;
+		*(sdata++) = '\0';	
+		
+		line_len += 2;
+		
+		pdata += line_len;	
+    }
+	return line_cnt;
 }
 
-/*有响应发送*/
-int8_t at_send_with_reply(const char* cmd , uint16_t timeout)
+
+void respond_data_process(uint8_t *buffer , uint16_t len)
+{	
+	uint8_t idx = 0;
+
+	if(respond.state == REPS_WAIT)
+	{
+		uint8_t cnt = 0;
+		for(uint8_t i=0;i < respond.line_cnt;i++)
+		{
+			idx += strlen(respond.fifo + idx) + 1;
+		}
+		if((AT_RESPOND_MAX - idx) > len)
+		{
+			cnt = enter_to_end((char*)buffer , respond.fifo+idx);
+			respond.line_cnt += cnt;
+			respond.rec = 1;
+		}
+	}
+}
+void at_send_cmd(const char* cmd)
 {
-	const char *p_end = cmd;
-	clean_reply();	
-	
 	usart_write(AT_USART,(uint8_t *)cmd , strlen(cmd)); 
-	
-	if(strstr(p_end,"\r\n") == NULL)
+
+	if(strstr(cmd,"\r\n") == NULL)
 	{
 		usart_write(AT_USART,(uint8_t *)"\r\n" , 2); 
 	}
-	if(wait_reply(timeout))
-	{
-		AT_LOG("\r\n>>>>>%s:reply timeout\r\n",cmd);
-		return -1;	
-	}
-	return 0;
 }
-/*无响应发送*/
-void at_send_without_reply(const char* cmd)
+
+void clean_respond(void)
 {
-	const char *p_end = cmd;
-	usart_write(AT_USART,(uint8_t *)cmd , strlen(cmd)); 
-	
-	if(strstr(p_end,"\r\n") == NULL)
-	{
-		usart_write(AT_USART,(uint8_t *)"\r\n" , 2); 
-	}
+	respond.line_cnt = 0;
+	respond.rec = 0;
+	respond.state = REPS_IDLE;
+	memset(respond.fifo,0,AT_RESPOND_MAX);
 }
-/*获取指定行号的响应数据*/
-static uint8_t *at_resp_get_line(uint8_t resp_line)
+char *at_resp_get_line(uint8_t resp_line)
 {
 	uint8_t idx = 0;
-	uint8_t *pdata = NULL;
-    if ((resp_line > respond.line_count) || (resp_line <= 0))
+	char *pdata = NULL;
+    if ((resp_line > respond.line_cnt) || (resp_line <= 0))
     {
+		AT_LOG("\r\n>>>>>input resp_line over the exit line\r\n");
         return 0;
     }
-	pdata = respond.data;
+	pdata = respond.fifo;
 	
 	for(uint8_t i=0;(i<resp_line-1);i++)
 	{
@@ -235,54 +228,91 @@ int8_t at_send_cmp_reply(const char* cmd,
 						 uint8_t line,
 						 uint16_t timeout)
 {
-	 uint8_t *resp_line_buf = 0;
-
-     if(at_send_with_reply(cmd,timeout))
-	 {
-		return (-1);
-	 }
+	char *resp_line_buf = NULL;	 
+	uint32_t time = 0;
 	
-	 if ((resp_line_buf = at_resp_get_line(line)) == 0)
-	 {
-		AT_LOG("\r\n>>>>>get the line buffer failed\r\n");
-		return -1;
-	 }
-	 
-	 /*diff*/
-	 if(memcmp(reply , resp_line_buf , strlen(reply)))
-	 {
-		AT_LOG("\r\n>>>>>reply is not expected\r\n");
-		return (-1);
-	 }
-	 return 0;
-}
-int8_t at_send_get_repy(const char*cmd,
-						const char* reply_head,
-						char *reply,
-						uint8_t line,
-						uint16_t timeout)
-{
-	 uint8_t * data = NULL;
-	 uint8_t *resp_line_buf = 0;
-	 
-	 if(at_send_with_reply(cmd,timeout))
-	 {
-		return (-1);
-	 }
-	 
-	if ((resp_line_buf = at_resp_get_line(line)) == 0)
+	/*send cmd*/
+	at_send_cmd(cmd);
+	respond.state =REPS_WAIT;
+	
+	/*wait for reply*/
+	if(!time)
 	{
-		AT_LOG("\r\n>>>>>get the line buffer failed\r\n");
-		return -1;
+		time = Uptime_Ms();
 	}
-
-	 /*diff*/
-	 if(memcmp(reply_head , resp_line_buf , strlen(reply_head)))
-	 {
-		AT_LOG("\r\n>>>>>the head of reply is not expected\r\n"); 
-		return (-1);
-	 }
-	 data = resp_line_buf + strlen(reply_head);
-	 memcpy(reply,data,strlen((char*)data));
-	 return 0;
+	while((Uptime_Ms() - time) < timeout)
+	{
+		if(respond.rec)
+		{
+			respond.rec = 0;
+			if(line <= respond.line_cnt)
+			{	
+				resp_line_buf = at_resp_get_line(line);
+				
+				/*diff*/
+				if(memcmp(reply , resp_line_buf , strlen(reply)))
+				{
+					AT_LOG("\r\n>>>>>reply is not expected\r\n");
+					clean_respond();
+					return (-1);
+				}
+				clean_respond();
+				return 0;
+			}
+		}
+	}
+	AT_LOG("\r\n>>>>>%s:reply timeout\r\n",cmd);
+	clean_respond();
+	return(-1);		
 }
+
+int8_t at_send_get_repy(const char*cmd,
+						  const char* reply_head,
+						  char *reply,
+						  uint8_t line,
+						  uint16_t timeout)
+{
+	uint32_t time = 0;
+	char * data = NULL;
+	char *resp_line_buf = 0;
+
+	/*send cmd*/
+	at_send_cmd(cmd);
+	respond.state =REPS_WAIT;
+	 
+	/*wait for reply*/
+	if(!time)
+	{
+		time = Uptime_Ms();
+	}
+	while((Uptime_Ms() - time) < timeout)
+	{
+		if(respond.rec)
+		{
+			respond.rec = 0;
+			if(line <= respond.line_cnt)
+			{	
+				resp_line_buf = at_resp_get_line(line);
+
+				/*diff*/
+				if(memcmp(reply , resp_line_buf , strlen(reply)))
+				{
+					AT_LOG("\r\n>>>>>reply is not expected\r\n");
+					clean_respond();
+					return (-1);
+				}
+
+				data = resp_line_buf + strlen(reply_head);
+				memcpy(reply,data,strlen((char*)data));
+				clean_respond();
+				return 0;
+			}
+		}
+	}
+	AT_LOG("\r\n>>>>>%s:reply timeout\r\n",cmd);
+	clean_respond();
+	return(-1);		
+
+}
+
+

@@ -68,12 +68,13 @@ void at_cmd_table_proc(void)
 {
 	static uint32_t start_time;
 	
+	
 	if(at_cmd_en)	
 	{
 		if(!start_time){
 			start_time = Uptime_Ms();
 		}
-		if((Uptime_Ms() - start_time) > cmd_table[at_cmd_idx].period)
+		if((Uptime_Ms() - start_time) > ((at_err_cnt == cmd_table[at_cmd_idx].cnt) ? 3000: cmd_table[at_cmd_idx].period))
 		{
 			start_time = 0;
 			

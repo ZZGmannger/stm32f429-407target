@@ -38,20 +38,21 @@ int main(void)
 	TIMx_Configuration();
 	usart_init();
 
+    //at_parser_init();
     ec20_init();
 	LED_RGBOFF;	
 	while(1)
 	{        
 		ec20_process();	
 
-		if(!time){
-			time = Uptime_Ms();
-		}
-		if(Uptime_Ms() - time > 3000)
-		{
-			time = 0;
-			AT_QISEND(hex,4);	
-		}
+//		if(!time){
+//			time = Uptime_Ms();
+//		}
+//		if(Uptime_Ms() - time > 3000)
+//		{
+//			time = 0;
+//			AT_QISEND(hex,4);	
+//		}
 	}	
 }
 

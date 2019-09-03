@@ -24,7 +24,7 @@ CMD_1: AT (check whether the connect is ok)
 =================================================*/
 int AT_START(void)
 {
-	if(at_send_cmp_reply("AT","OK",2,1000))
+	if(at_send_cmp_reply("AT","OK",2,10000))
 	{
 		return CMD_ERR;
 	}
@@ -225,8 +225,8 @@ void AT_QISEND(uint8_t *buffer , uint8_t len)
 /*=====================*/
 void at_cmd_init(void)
 {
-	AT_handle   	= cmd_register(2000 , 3 , AT_START , AT_START_HOOK);
-	CPIN_handle 	= cmd_register(4000 , 5 , AT_CPIN_CMD , AT_CPIN_HOOK);
+	AT_handle   	= cmd_register(15000 , 3 , AT_START , AT_START_HOOK);
+	CPIN_handle 	= cmd_register(2000 , 2 , AT_CPIN_CMD , AT_CPIN_HOOK);
 	CREG_handle 	= cmd_register(10000, 9 , AT_CREG_CMD , AT_CREG_HOOK);
 	
 	QISTATE_handle  = cmd_register(2000,  1 , AT_QISTATE_CMD , AT_QISTATE_HOOK);
