@@ -42,7 +42,10 @@
 .\objects\main.o: ..\..\FATFS\ff.h
 .\objects\main.o: ..\..\FATFS\integer.h
 .\objects\main.o: ..\..\FATFS\ffconf.h
-.\objects\main.o: ..\..\User\at_parser\at_parser.h
+.\objects\main.o: ..\..\User\at\sim800.h
+.\objects\main.o: ..\..\User\at\ec20.h
+.\objects\main.o: ..\..\User\at\at_producer.h
+.\objects\main.o: ..\..\User\at\at_config.h
 .\objects\main.o: C:\Keil_v5.28\ARM\ARMCC\Bin\..\include\string.h
 .\objects\main.o: C:\Keil_v5.28\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\main.o: C:\Keil_v5.28\ARM\ARMCC\Bin\..\include\stdarg.h

@@ -1,77 +1,77 @@
-   
-#include "./usart/bsp_usart.h"
-#include "sys_tick.h"
 #include "at_parser.h"
 
-
-
-#define AT_USART (USART2)
-
-#define URC_MAX_NUM   (8)
-#define AT_RESPOND_MAX 256
-
-struct resp_t
+/*=============================================================
+respond struct
+==============================================================*/
+typedef struct 
 {
 	uint8_t rec;
 	uint8_t state;
 	uint8_t line_cnt;
 	char fifo[AT_RESPOND_MAX];
-};
-struct resp_t  respond;
+}resp_t;
+resp_t  respond;
 
 enum
 {
 	REPS_IDLE,
 	REPS_WAIT,
 };
-
+/*===========================================================
+URC struct
+============================================================*/
 typedef struct 
 {
-	char cmd[36];
+	char cmd[URC_MAX_CMDLEN];
 	urc_func func;
 }urc_t;	
 urc_t URC_table[URC_MAX_NUM];
 
-uint8_t at_register_urc(const char *cmd , urc_func callback)
+uint8_t urc_num;
+
+/*============================================================
+AT parser init and register usart
+=============================================================*/
+static uint8_t URC_data_process(uint8_t *buffer,uint16_t len);
+static uint8_t respond_data_process(uint8_t *buffer , uint16_t len);
+
+static void uart_callback(uint8_t *data , uint16_t len)
 {
-	for(uint8_t i=0;i<URC_MAX_NUM;i++)
+	if(URC_data_process(data,len))
 	{
-		if((URC_table[i].cmd[0] == NULL) && URC_table[i].func == NULL)
-		{
-			memcpy(URC_table[i].cmd,cmd,strlen(cmd));
-			URC_table[i].func  = callback;
-			return 0;
-		}
-	}	
-	AT_LOG("create urc:%s command failed\r\n",cmd);
-	return (255);
-}
-void at_unregister_urc(const char * cmd)
-{
-	for(uint8_t i=0;i<URC_MAX_NUM;i++)
-	{
-		if(URC_table[i].func != NULL)
-		{
-			if(!memcmp(cmd , URC_table[i].cmd , strlen(cmd)))
-			{
-				memset(URC_table[i].cmd,0,sizeof(URC_table[i].cmd));
-				URC_table[i].func = NULL;
-				return;
-			}
-		}
+		return;
 	}
-	AT_LOG("%s :command not found in URC_table\r\n",cmd);
+    if(respond_data_process(data,len))
+	{
+		return;
+	}
 }
 
-
- 
-static uint8_t URC_data_process(uint8_t *buffer,uint16_t len)
+void at_parser_init(void)
+{
+	usart_register(reg_usart0 , uart_callback);
+}
+/*============================================================
+AT parser URC API
+=============================================================*/
+int8_t at_register_urc(const char *cmd , urc_func callback)
+{
+	if(urc_num < URC_MAX_NUM)
+	{
+		memcpy(URC_table[urc_num].cmd , cmd , strlen(cmd));
+		URC_table[urc_num].func  = callback;
+		++urc_num;
+		return 0;
+	}	
+	AT_LOG(">>>>>create urc:%s command failed\r\n",cmd);
+	return (-1);
+}
+static uint8_t URC_data_process(uint8_t *buffer , uint16_t len)
 {
 	char *pdata = NULL;	
-
 	uint8_t head_len = 0;
 	
-	for(uint8_t i=0;i<URC_MAX_NUM;i++)
+	for(uint8_t i=0;i<urc_num;i++)
 	{
 		if(URC_table[i].func != NULL)
 		{
@@ -87,36 +87,10 @@ static uint8_t URC_data_process(uint8_t *buffer,uint16_t len)
 	return 0;
 }
 
-
-void respond_data_process(uint8_t *buffer , uint16_t len);
-
-static void uart_callback(uint8_t *data , uint8_t len)
-{
-	if(URC_data_process(data,len))
-	{
-		return;
-	}
-    respond_data_process(data,len);
-}
-
-void at_parser_init(void)
-{
-	if(AT_USART == USART1)
-	{
-		usart_register(1, uart_callback);
-	}
-	else if(AT_USART == USART2)
-	{
-		usart_register(2, uart_callback);
-	}
-	else
-	{
-		AT_LOG("\r\n>>>>>AT parser register fail\r\n");
-	}
-}
-
-
-uint8_t enter_to_end(char* from_str , char* to_str)
+/*============================================================
+AT parser respond API
+=============================================================*/
+static uint8_t enter_to_end(char* from_str , char* to_str,uint8_t len)
 {
 	uint8_t line_cnt = 0;
 	uint8_t line_len = 0;
@@ -125,7 +99,7 @@ uint8_t enter_to_end(char* from_str , char* to_str)
 	char *pdata = from_str;
 	char *sdata = to_str;
 	
-	uint8_t length = strlen(from_str);
+	uint8_t length = len;
    
    while(pdata < (char*)(from_str + length))
    {
@@ -136,7 +110,7 @@ uint8_t enter_to_end(char* from_str , char* to_str)
 			idx = strstr((char *)pdata,"\r");
 			if(idx == NULL)
 			{
-				return line_cnt;
+				return line_cnt+1;
 			}
 			*idx ='\0';
 			line_len = strlen(pdata);
@@ -146,7 +120,7 @@ uint8_t enter_to_end(char* from_str , char* to_str)
 				sdata += line_len;
 				*(sdata++) = '\0';	
 			}
-			return line_cnt+1;
+			return (line_cnt+1);
 		};
 		line_cnt++;
 		
@@ -168,7 +142,7 @@ uint8_t enter_to_end(char* from_str , char* to_str)
 }
 
 
-void respond_data_process(uint8_t *buffer , uint16_t len)
+static uint8_t respond_data_process(uint8_t *buffer , uint16_t len)
 {	
 	uint8_t idx = 0;
 
@@ -181,30 +155,22 @@ void respond_data_process(uint8_t *buffer , uint16_t len)
 		}
 		if((AT_RESPOND_MAX - idx) > len)
 		{
-			cnt = enter_to_end((char*)buffer , respond.fifo+idx);
+			cnt = enter_to_end((char*)buffer , respond.fifo+idx , len);
 			respond.line_cnt += cnt;
 			respond.rec = 1;
 		}
+		return 1;
 	}
+	return 0;
 }
-void at_send_cmd(const char* cmd)
-{
-	usart_write(AT_USART,(uint8_t *)cmd , strlen(cmd)); 
-
-	if(strstr(cmd,"\r\n") == NULL)
-	{
-		usart_write(AT_USART,(uint8_t *)"\r\n" , 2); 
-	}
-}
-
-void clean_respond(void)
+static void clean_respond(void)
 {
 	respond.line_cnt = 0;
 	respond.rec = 0;
 	respond.state = REPS_IDLE;
 	memset(respond.fifo,0,AT_RESPOND_MAX);
 }
-char *at_resp_get_line(uint8_t resp_line)
+static char *at_resp_get_line(uint8_t resp_line)
 {
 	uint8_t idx = 0;
 	char *pdata = NULL;
@@ -223,6 +189,21 @@ char *at_resp_get_line(uint8_t resp_line)
 	return pdata;
 }
  
+
+void at_send_cmd(const char* cmd)
+{
+	usart_write(AT_USART,(uint8_t *)cmd , strlen(cmd)); 
+
+	if(strstr(cmd,"\r\n") == NULL)
+	{
+		usart_write(AT_USART,(uint8_t *)"\r\n" , 2); 
+	}
+}
+void at_send_data(const char*buf)
+{
+	usart_write(AT_USART,(uint8_t *)buf , strlen(buf)); 
+}
+
 int8_t at_send_cmp_reply(const char* cmd,
 						 const char *reply,
 						 uint8_t line,
@@ -250,7 +231,7 @@ int8_t at_send_cmp_reply(const char* cmd,
 				resp_line_buf = at_resp_get_line(line);
 				
 				/*diff*/
-				if(memcmp(reply , resp_line_buf , strlen(reply)))
+				if(strstr(resp_line_buf,reply)==NULL)
 				{
 					AT_LOG("\r\n>>>>>reply is not expected\r\n");
 					clean_respond();
@@ -266,7 +247,7 @@ int8_t at_send_cmp_reply(const char* cmd,
 	return(-1);		
 }
 
-int8_t at_send_get_repy(const char*cmd,
+int8_t at_send_get_reply(const char*cmd,
 						  const char* reply_head,
 						  char *reply,
 						  uint8_t line,
@@ -295,14 +276,20 @@ int8_t at_send_get_repy(const char*cmd,
 				resp_line_buf = at_resp_get_line(line);
 
 				/*diff*/
-				if(memcmp(reply , resp_line_buf , strlen(reply)))
+				if(reply_head != NULL)
 				{
-					AT_LOG("\r\n>>>>>reply is not expected\r\n");
-					clean_respond();
-					return (-1);
+					if(memcmp(reply , resp_line_buf , strlen(reply)))
+					{
+						AT_LOG("\r\n>>>>>reply is not expected\r\n");
+						clean_respond();
+						return (-1);
+					}
+					data = resp_line_buf + strlen(reply_head);
 				}
-
-				data = resp_line_buf + strlen(reply_head);
+				else
+				{
+					data = resp_line_buf;
+				}				
 				memcpy(reply,data,strlen((char*)data));
 				clean_respond();
 				return 0;
@@ -312,7 +299,6 @@ int8_t at_send_get_repy(const char*cmd,
 	AT_LOG("\r\n>>>>>%s:reply timeout\r\n",cmd);
 	clean_respond();
 	return(-1);		
-
 }
 
 

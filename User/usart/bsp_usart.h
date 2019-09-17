@@ -52,7 +52,7 @@
 #define CMD_USART_IRQ                 		  USART2_IRQn
 
 
-typedef void (*usart_cb_t)(uint8_t *buffer,uint8_t length);
+typedef void (*usart_cb_t)(uint8_t *buffer,uint16_t length);
 void usart_init(void);
 void usart_register(uint8_t port,usart_cb_t cb);
 void usart_write(USART_TypeDef * pUSARTx , uint8_t *buffer, uint8_t len);

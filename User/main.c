@@ -21,16 +21,12 @@
 #include "./usart/bsp_usart.h"
 #include "ff.h"
 
-#include "at_parser.h"
+#include "sim800.h"
+#include "ec20.h"
+#include "at_producer.h"
 
-
-void ec20_process(void);
-void ec20_init(void);
-void AT_QISEND(uint8_t *buffer , uint8_t len);
-
-uint32_t time;
-uint8_t hex[20] = {0xaa , 0x0b, 0x01 ,0xBB};
 char ret[30];
+
 int main(void) 
 {
 	SysTick_init();
@@ -38,21 +34,12 @@ int main(void)
 	TIMx_Configuration();
 	usart_init();
 
-    //at_parser_init();
-    ec20_init();
 	LED_RGBOFF;	
+
+	ec20_init();
 	while(1)
 	{        
-		ec20_process();	
-
-//		if(!time){
-//			time = Uptime_Ms();
-//		}
-//		if(Uptime_Ms() - time > 3000)
-//		{
-//			time = 0;
-//			AT_QISEND(hex,4);	
-//		}
+		 at_cmd_scheduler();
 	}	
 }
 

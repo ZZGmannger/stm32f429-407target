@@ -1,13 +1,7 @@
-#include "./EC20/ec20.h"
+#include "ec20.h"
 #include "at_parser.h"
-#include "sys_tick.h"
-#include "./led/bsp_led.h"
 #include "at_producer.h"
 
-#define CMD_ERR   (-1)
-#define CMD_OK    (0)
-
-#define EC20_LOG printf
 
 uint8_t AT_handle;
 uint8_t CPIN_handle;
@@ -17,32 +11,21 @@ uint8_t QISTATE_handle;
 uint8_t QIOPEN_handle;
 uint8_t QICLOSE_handle;
 
-
 uint8_t tcp_conected;
+
 /*================================================
 CMD_1: AT (check whether the connect is ok) 
 =================================================*/
 int AT_START(void)
 {
-	if(at_send_cmp_reply("AT","OK",2,10000))
+	if(at_send_cmp_reply("AT","OK",2,1000))
 	{
 		return CMD_ERR;
 	}
 	
 	return CMD_OK;
 }
-void AT_START_HOOK(uint8_t parameter)
-{
-	if(parameter)
-	{
-		 at_cmd_start(CPIN_handle);
-	}
-	else
-	{
-		EC20_LOG("\r\n>>>'AT' cmd error\r\n");
-		at_cmd_start(AT_handle);
-	}	
-}
+
 /*=======================================================
 CMD_2: AT+CPIN? (check whether  identify (U)SIM card) 
       
@@ -52,7 +35,7 @@ Explain: If failed to identify (U)SIM card in 20s, then
 int AT_CPIN_CMD(void)
 {
 	char ret[32]={0};
-	if(at_send_get_repy("AT+CPIN?","+CPIN:",ret,2,2000))
+	if(at_send_get_reply("AT+CPIN?","+CPIN:",ret,2,2000))
 	{
 		return CMD_ERR;
 	}	
@@ -62,18 +45,7 @@ int AT_CPIN_CMD(void)
 	}
 	return CMD_OK;
 }
-void AT_CPIN_HOOK(uint8_t parameter)
-{
-	if((parameter)==1) 
-	{
-		at_cmd_start(CREG_handle);  
-	}
-	else  
-	{
-		//you need to reboot the module
-		at_cmd_start(AT_handle);
-	}
-}
+
 /*=============================================================
 CMD_3: AT+CREG? (check whether   register on CS domain service) 
       
@@ -83,7 +55,7 @@ Explain: If failed to register on CS domain service in 90s,
 int AT_CREG_CMD(void)
 {
 	char ret[32]={0};
-	if(at_send_get_repy("AT+CREG?","+CREG:",ret,2,2000))
+	if(at_send_get_reply("AT+CREG?","+CREG:",ret,2,2000))
 	{
 		return CMD_ERR;
 	}	
@@ -92,17 +64,6 @@ int AT_CREG_CMD(void)
 		return CMD_ERR;
 	}
 	return CMD_OK;
-}
-void AT_CREG_HOOK(uint8_t parameter)
-{
-	if((parameter)==1) 
-	{
-		at_cmd_start(QISTATE_handle);  
-	}
-	else  
-	{
-		at_cmd_start(AT_handle);
-	}
 }
 /*=============================================================
 CMD_4: AT+QISTATE (check whether   register on CS domain service) 
@@ -118,17 +79,6 @@ int AT_QISTATE_CMD(void)
 	}		
 	return CMD_OK;
 }
-void AT_QISTATE_HOOK(uint8_t parameter)
-{
-	if((parameter)==1) 
-	{
-		at_cmd_start(QIOPEN_handle);  
-	}
-	else  
-	{
-		at_cmd_start(QICLOSE_handle);
-	}
-}
 /*=============================================================
 CMD_4: AT+QIOPEN (connect to the server) 
       
@@ -143,17 +93,7 @@ int AT_QIOPEN_CMD(void)
 	}		
 	return CMD_OK;
 }
-void AT_QIOPEN_HOOK(uint8_t parameter)
-{
-	if((parameter)==1) 
-	{
-		//at_cmd_start(3);  
-	}
-	else  
-	{
-		at_cmd_start(AT_handle);
-	}
-}
+
 /*=============================================================
 CMD_4: AT+QICLOSE (connect to the server) 
       
@@ -168,18 +108,6 @@ int AT_QICLOSE_CMD(void)
 	}		
 	return CMD_OK;
 }
-void AT_QICLOSE_HOOK(uint8_t parameter)
-{
-	if((parameter)==1) 
-	{
-		at_cmd_start(QISTATE_handle);  
-	}
-	else  
-	{
-		at_cmd_start(QICLOSE_handle);
-	}
-}
-
 
 void hex_to_str(uint8_t*pbDest, uint8_t*pbSrc, int nLen)
 {
@@ -223,15 +151,15 @@ void AT_QISEND(uint8_t *buffer , uint8_t len)
 
 
 /*=====================*/
-void at_cmd_init(void)
+void tcp_init(void)
 {
-	AT_handle   	= cmd_register(15000 , 3 , AT_START , AT_START_HOOK);
-	CPIN_handle 	= cmd_register(2000 , 2 , AT_CPIN_CMD , AT_CPIN_HOOK);
-	CREG_handle 	= cmd_register(10000, 9 , AT_CREG_CMD , AT_CREG_HOOK);
+	AT_handle   	= cmd_register(3000 , 5, AT_START);
+	CPIN_handle 	= cmd_register(3000 , 2 , AT_CPIN_CMD);
+	CREG_handle 	= cmd_register(3000, 9 , AT_CREG_CMD);
 	
-	QISTATE_handle  = cmd_register(2000,  1 , AT_QISTATE_CMD , AT_QISTATE_HOOK);
-	QIOPEN_handle 	= cmd_register(1000,  1 , AT_QIOPEN_CMD , AT_QIOPEN_HOOK);
-	QICLOSE_handle  = cmd_register(1000,  1 , AT_QICLOSE_CMD , AT_QICLOSE_HOOK);
+	QISTATE_handle  = cmd_register(3000,  1 , AT_QISTATE_CMD);
+	QIOPEN_handle 	= cmd_register(3000,  1 , AT_QIOPEN_CMD);
+	QICLOSE_handle  = cmd_register(3000,  1 , AT_QICLOSE_CMD);
 	
     at_cmd_start(AT_handle);
 }
@@ -287,21 +215,19 @@ void urc_start_recieve(uint8_t *buffer,uint8_t len)
 
 /*========================================================*/
 
- 
+void ec20_cmd_hook(uint8_t handle ,uint8_t state)
+{
+
+}
+
 void ec20_init(void)
 {
 	at_parser_init();
-	at_cmd_init();
+	producer_hook_register(ec20_cmd_hook);
+	tcp_init();
 	at_register_urc("+QIURC: \"recv\"", urc_start_recieve);
 	at_register_urc("+QIURC: \"closed\"", urc_disconnected_deal);
 	at_register_urc("+QIOPEN: ", check_tcp_state);
 }
-
-
-void ec20_process(void)
-{
-	at_cmd_table_proc();
-}
-
 
 

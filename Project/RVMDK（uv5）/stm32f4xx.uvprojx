@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\Libraries\CMSIS\Include;..\..\User;..\..\FATFS;..\..\FATFS\exfuns;..\..\FATFS\src;..\..\FATFS\src\option;..\..\User\at_parser</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS\Device\ST\STM32F4xx\Include;..\..\Libraries\STM32F4xx_StdPeriph_Driver\inc;..\..\Libraries\CMSIS\Include;..\..\User;..\..\FATFS;..\..\FATFS\exfuns;..\..\FATFS\src;..\..\FATFS\src\option;..\..\User\at</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -393,19 +393,85 @@
               <FilePath>..\..\User\stm32f4xx_it.c</FilePath>
             </File>
             <File>
+              <FileName>sim800.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\at\sim800.c</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>2</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>0</IncludeInBuild>
+                  <AlwaysBuild>0</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                  <ComprImg>1</ComprImg>
+                </CommonProperty>
+                <FileArmAds>
+                  <Cads>
+                    <interw>2</interw>
+                    <Optim>0</Optim>
+                    <oTime>2</oTime>
+                    <SplitLS>2</SplitLS>
+                    <OneElfS>2</OneElfS>
+                    <Strict>2</Strict>
+                    <EnumInt>2</EnumInt>
+                    <PlainCh>2</PlainCh>
+                    <Ropi>2</Ropi>
+                    <Rwpi>2</Rwpi>
+                    <wLevel>0</wLevel>
+                    <uThumb>2</uThumb>
+                    <uSurpInc>2</uSurpInc>
+                    <uC99>2</uC99>
+                    <uGnu>2</uGnu>
+                    <useXO>2</useXO>
+                    <v6Lang>0</v6Lang>
+                    <v6LangP>0</v6LangP>
+                    <vShortEn>2</vShortEn>
+                    <vShortWch>2</vShortWch>
+                    <v6Lto>2</v6Lto>
+                    <v6WtE>2</v6WtE>
+                    <v6Rtti>2</v6Rtti>
+                    <VariousControls>
+                      <MiscControls></MiscControls>
+                      <Define></Define>
+                      <Undefine></Undefine>
+                      <IncludePath></IncludePath>
+                    </VariousControls>
+                  </Cads>
+                </FileArmAds>
+              </FileOption>
+            </File>
+            <File>
               <FileName>ec20.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\User\EC20\ec20.c</FilePath>
+              <FilePath>..\..\User\at\ec20.c</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>at</GroupName>
+          <Files>
             <File>
               <FileName>at_parser.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\User\at_parser\at_parser.c</FilePath>
+              <FilePath>..\..\User\at\at_parser.c</FilePath>
             </File>
             <File>
               <FileName>at_producer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\User\at_parser\at_producer.c</FilePath>
+              <FilePath>..\..\User\at\at_producer.c</FilePath>
+            </File>
+            <File>
+              <FileName>at_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\User\at\at_config.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1101,19 +1167,34 @@
               <FilePath>..\..\User\stm32f4xx_it.c</FilePath>
             </File>
             <File>
+              <FileName>sim800.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\at\sim800.c</FilePath>
+            </File>
+            <File>
               <FileName>ec20.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\User\EC20\ec20.c</FilePath>
+              <FilePath>..\..\User\at\ec20.c</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>at</GroupName>
+          <Files>
             <File>
               <FileName>at_parser.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\User\at_parser\at_parser.c</FilePath>
+              <FilePath>..\..\User\at\at_parser.c</FilePath>
             </File>
             <File>
               <FileName>at_producer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\User\at_parser\at_producer.c</FilePath>
+              <FilePath>..\..\User\at\at_producer.c</FilePath>
+            </File>
+            <File>
+              <FileName>at_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\User\at\at_config.h</FilePath>
             </File>
           </Files>
         </Group>
